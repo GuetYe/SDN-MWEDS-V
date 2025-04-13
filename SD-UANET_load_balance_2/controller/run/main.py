@@ -87,8 +87,7 @@ class TopologyView(QGraphicsView):
         # 用集合记录已经添加的连接线
         self.added_connections = set()  
 
-        #虚拟的拓扑连接，Qt显示.1、需更改的地方
-        self.virtual_link_list = [(5,21), (6,21), (4,21), (3,21), (3,4)]
+
     
     
     def add_node_with_image(self, identifier, x, y, label, image_path, size):
@@ -211,15 +210,6 @@ class TopologyView(QGraphicsView):
                         # 将连接线添加到已画过的集合中
                         self.added_connections.add((src_dpid, dst_dpid))  
 
-                # 画虚拟链路，3、可更改的地方
-                for (src_dpid, dst_dpid) in self.virtual_link_list:
-                    if (src_dpid, dst_dpid) not in self.added_connections \
-                        and src_dpid in self.nodes.keys() \
-                        and dst_dpid in self.nodes.keys() :
-                        # 连接2个节点
-                        self.add_connection(src_dpid, dst_dpid)
-                        # 将连接线添加到已画过的集合中
-                        self.added_connections.add((src_dpid, dst_dpid))  
 
         # # 模拟节点的移动
         # for identifier, node_info in self.nodes.items():
