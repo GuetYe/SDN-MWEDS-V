@@ -1,10 +1,10 @@
 '''
 Author: 孙石泉 786721684@qq.com
 Date: 2024-01-21 14:47:07
-LastEditTime: 2025-02-18 21:55:33
+LastEditTime: 2025-05-12 10:37:52
 LastEditors: Sun Shiquan
 Description: 1.控制器获取samba服务器的状态信息  2.获取终端上传文件的请求并根据多属性决策得到分割方案，把分割方案发给终端
-FilePath: \SD-UANET_load_balance_2\controller\ryu_operation\host_get_msg.py
+FilePath: \SD-UANET_load_balance_2_25_5_7\controller\ryu_operation\host_get_msg.py
 
 '''
 
@@ -17,7 +17,7 @@ from ryu.controller.handler import set_ev_cls, MAIN_DISPATCHER
 from ryu.controller import ofp_event
 from ryu.lib.packet import packet, ipv4, ethernet, arp
 from ryu.lib.packet import ether_types
-
+import ubw
 import config.setting as setting
 import re
 import time
@@ -40,7 +40,8 @@ class Host_Get_MSG(app_manager.RyuApp):
         self.search_request_method = re.compile(
             r'.+ClientRequest\(file_name=(?P<file_name>\S+.\S+?),file_size=(?P<file_size>\d+?)\)\]')
         
-        self.search_uav_method = re.compile(r'.+UAVPosition\(UAV_target_position=\[(?P<position>(?:-?\d+\.\d+)(?:,\s*-?\d+\.\d+)*)\]\]')
+        # self.search_uav_method = re.compile(r'.+UAVPosition\(UAV_target_position=\[(?P<position>(?:-?\d+\.\d+)(?:,\s*-?\d+\.\d+)*)\]\]')
+        self.search_uav_method = re.compile(r'UAVPosition\(UAV_target_position=(?P<position>[^\]]+)\]')
         
         # 记录所有主机的当前状态{host_ip:[IO_load, Cpu_Uti, Mem_uti, Remain_Capacity], ...} self.all_host_stats = {}  
         self.all_host_stats = {}  
@@ -51,6 +52,14 @@ class Host_Get_MSG(app_manager.RyuApp):
         self.uav_port = None
         self.uav_mac = None
         self.uav_ip = None
+
+        self.current_ans = None
+        self.current_ans_raw = None
+
+        # 定义一个缓存列表
+        self.uav_position_buffer = []
+
+
 
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
@@ -190,19 +199,87 @@ class Host_Get_MSG(app_manager.RyuApp):
 
         # 3.检测是否是无人机的实时位置数据
         elif self.search_uav_method.search(data_str) != None: 
+            
             if dst_cont_ip in setting.CONTROLLER_IP:
                 
                 logger.info("UAV's terminal send current position (x,y)")
 
 
                 # 1.取出上报的UAV坐标
-                file_name = self.search_uav_method.search(data_str).group('position')
+                # file_name = self.search_uav_method.search(data_str).group('position')
+
+
+                # ************************* 修改的地方 **************************************
+                # m = self.search_uav_method.search(data_str)
+                # if m:
+                #     position_str = m.group('position').strip() # mc 0f 0000019f 0000045c 000002d6 00000393 6055 07 000c67de t00:0
+                #     fields = position_str.split()
+                #     wanted = ' '.join(fields[:6]) # mc 0f 0000019f 0000045c 000002d6 00000393
+                #
+                #     # print(wanted)
+                #     if 'mc' in wanted:
+                #         self.data0.extend(wanted.split(' '))
+                #         if '' in self.data0:
+                #             self.data0.remove('')
+                #
+                #         if len(self.data0 < 10):
+                #             return
+                #
+                #     ans = ubw.get_coordinates(self.data0)
+                #     logger.info("UAV's terminal recive current position x,y:%s" % ans)
+                #     self.data0 = [] # 清零
+                #
+                # else:
+                #     logger.info("UAV position 正则失败")
+                #     return
+                
+                # ***************************************************************************
+                m = self.search_uav_method.search(data_str).group('position')
+                logger.info("UAV's position data m:%s" % m)
+                m = m.split(",")
+                self.current_ans_raw = ubw.get_coordinates(m)
+                # if not self.current_position:
+                #     return
+                logger.info("UAV's terminal recive current position x,y:%s" % self.current_ans)
+
+                
+
+                # 假设你在这里拿到了1个坐标：
+                # self.current_ans 是一个 [x, y] 格式的列表
+                # if self.current_ans_raw:
+                #     self.uav_position_buffer.append(self.current_ans)
+
+                #     if len(self.uav_position_buffer) == 5:
+                #         # 分别处理 x 和 y
+                #         x_list = [pos[0] for pos in self.uav_position_buffer]
+                #         y_list = [pos[1] for pos in self.uav_position_buffer]
+
+                #         # 去掉最大值和最小值
+                #         x_list_sorted = sorted(x_list)
+                #         y_list_sorted = sorted(y_list)
+                #         x_avg = sum(x_list_sorted[1:4]) / 3
+                #         y_avg = sum(y_list_sorted[1:4]) / 3
+
+                #         filtered_position = [x_avg, y_avg]
+                #         self.current_ans = filtered_position
+                #         logger.info("Filtered UAV position x,y: %s" % filtered_position)
+
+                #         # 清空缓存，等待下一轮
+                #         self.uav_position_buffer.clear()
+
+
+
+                
+                
+
+                # ***************************************************************************
+
 
                 # 2.解析IPv4层
                 pkt = packet.Packet(data=original_data)
                 ipv4_pkt = pkt.get_protocol(ipv4.ipv4)
                 self.uav_ip = ipv4_pkt.src  # 取出上报状态的主机IP
-
+                
                 # 3.找到无人机上SDN交换机的datapath，mac地址，端口等等
 
 

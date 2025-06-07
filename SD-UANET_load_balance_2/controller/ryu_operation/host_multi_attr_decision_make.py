@@ -1,10 +1,10 @@
 '''
 Author: 孙石泉 786721684@qq.com
 Date: 2024-01-21 14:47:57
-LastEditTime: 2024-11-27 21:29:23
+LastEditTime: 2025-05-12 17:38:47
 LastEditors: Sun Shiquan
 Description: 根据服务器的状态进行多属性决策获得文件的分割方案
-FilePath: \SD-UANET_load_balance_mac\controller\ryu_operation\host_multi_attr_decision_make.py
+FilePath: \SD-UANET_load_balance_2_25_5_7\controller\ryu_operation\host_multi_attr_decision_make.py
 '''
 
 from ryu.base import app_manager
@@ -105,17 +105,17 @@ class MutiAttribute_DecisionMaking(app_manager.RyuApp):
 
         for step, each_host_stats in enumerate(decision_matrix):
             if load_norma != 0.0:  # 分母不能为0，否则为无穷大
-                load_ = ((-each_host_stats[0]) / load_norma) * setting.LOAD_FACTOR
+                load_ = ((each_host_stats[0]) / load_norma) * setting.LOAD_FACTOR
             else:
                 load_ = 0.0
 
             if cpu_uti_norma != 0.0:
-                cpu_uti_ = ((-each_host_stats[1]) / cpu_uti_norma) * setting.CPU_UTI_FACTOR
+                cpu_uti_ = ((each_host_stats[1]) / cpu_uti_norma) * setting.CPU_UTI_FACTOR
             else:
                 cpu_uti_ = 0.0
 
             if mem_uti_norma != 0.0:
-                mem_uti_ = ((-each_host_stats[2]) / mem_uti_norma) * setting.MEM_UTI_FACTOR
+                mem_uti_ = ((each_host_stats[2]) / mem_uti_norma) * setting.MEM_UTI_FACTOR
             else:
                 mem_uti_ = 0.0
 
@@ -175,7 +175,7 @@ class MutiAttribute_DecisionMaking(app_manager.RyuApp):
             sum += each
         for step, each in enumerate(relative_closeness):
             if (step + 1) != len(relative_closeness):  # 遍历最后一个之前的数
-                each_proportion = round(each / sum, 2)
+                each_proportion = round((each / sum), 2)
             else:
                 each_proportion = round(1.0 - np.sum(proportion_list), 2)
             proportion_list.append(each_proportion)

@@ -1,7 +1,7 @@
 '''
 Author: 孙石泉 786721684@qq.com
 Date: 2024-02-27 08:26:13
-LastEditTime: 2025-03-15 22:21:04
+LastEditTime: 2025-01-02 11:49:05
 LastEditors: Sun Shiquan
 Description: 
 FilePath: \SD-UANET_load_balance_2\controller\ryu_operation\network_uav_position.py
@@ -40,7 +40,7 @@ class NetworkOverloadNode(app_manager.RyuApp):
 
         self.voronoi_flag = False
         # 目标坐标
-        self.uav_position = []
+        self.uav_position = None
 
 
 
@@ -85,9 +85,8 @@ class NetworkOverloadNode(app_manager.RyuApp):
         while True:
             # 计算在不同维诺点位置时的MST代价
             mst_costs = []
-            
+            self.G = copy.deepcopy(self.structure.network_topology)
             for v_point in voronoi_points:
-                self.G = copy.deepcopy(self.structure.network_topology)
                 # 更新图，将无人机移动到当前维诺点位置
                 self.add_edges_for_drone(self.G, v_point)
 

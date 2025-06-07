@@ -1,7 +1,7 @@
 '''
 Author: 孙石泉 786721684@qq.com
 Date: 2023-11-24 09:14:50
-LastEditTime: 2025-02-27 16:14:36
+LastEditTime: 2025-06-07 22:22:50
 LastEditors: Sun Shiquan
 Description: 
 FilePath: \SD-UANET_load_balance_2\controller\run\main.py
@@ -82,11 +82,10 @@ class TopologyView(QGraphicsView):
 
         self.structure = structure
         # 拓扑中节点的初始位置
-        self.topo_info = {1:[150, 5], 2:[150, 95], 3:[150, 185], 4:[50, 275], 5:[250, 275], 6:[150, 365],  21:[150, 250]}
+        self.topo_info = {1:[150, 5], 2:[150, 95], 3:[150, 185], 4:[50, 275], 5:[250, 275], 6:[150, 365],  7:[150, 250]}
 
         # 用集合记录已经添加的连接线
         self.added_connections = set()  
-
 
     
     
@@ -185,11 +184,36 @@ class TopologyView(QGraphicsView):
                                                      "../qt_ui/router_color.png", 30
                                                      )
                     # 添加界面显示的图标.2、需更改的地方
-                    self.add_node_with_image(21,
-                                            self.topo_info[21][0],
-                                            self.topo_info[21][1], "{}".format(21),
+                    self.add_node_with_image(7,
+                                            self.topo_info[7][0],
+                                            self.topo_info[7][1], "{}".format(7),
                                             "../qt_ui/UAV.png", 30
                                             )
+                    # # 添加界面显示的图标.2、需更改的地方
+                    # self.add_node_with_image(1,
+                    #                         self.topo_info[1][0],
+                    #                         self.topo_info[1][1], "{}".format(1),
+                    #                         "../qt_ui/router_color.png", 30
+                    #                         )
+                    # # 添加界面显示的图标.2、需更改的地方
+                    # self.add_node_with_image(2,
+                    #                         self.topo_info[2][0],
+                    #                         self.topo_info[2][1], "{}".format(2),
+                    #                         "../qt_ui/router_color.png", 30
+                    #                         )
+                    # # 添加界面显示的图标.2、需更改的地方
+                    # self.add_node_with_image(3,
+                    #                         self.topo_info[3][0],
+                    #                         self.topo_info[3][1], "{}".format(3),
+                    #                         "../qt_ui/router_color.png", 30
+                    #                         )
+                    # # 添加界面显示的图标.2、需更改的地方
+                    # self.add_node_with_image(4,
+                    #                         self.topo_info[4][0],
+                    #                         self.topo_info[4][1], "{}".format(4),
+                    #                         "../qt_ui/router_color.png", 30
+                    #                         )
+                    
 
                 # # 2.删除节点
                 # for each_node in list(self.nodes.keys()):
@@ -209,6 +233,7 @@ class TopologyView(QGraphicsView):
                         self.add_connection(src_dpid, dst_dpid)
                         # 将连接线添加到已画过的集合中
                         self.added_connections.add((src_dpid, dst_dpid))  
+
 
 
         # # 模拟节点的移动
@@ -281,14 +306,31 @@ class Networkmain(app_manager.RyuApp):
         
 
 
-    def send_target_position(self):
-        self.target_position = self.uav_position.uav_position
+    def send_position(self):
+        self.target_position = (self.uav_position.uav_position)
+        self.current_position = self.host_get_msg.current_ans
+        if self.current_position == None:
+            self.current_position = [4.01, 4.24]
+            self.target_position = [1.56, 4.4]
+            
+
         if self.host_get_msg.uav_datapath != None and self.host_get_msg.uav_port != None and self.host_get_msg.uav_mac != None and self.host_get_msg.uav_ip != None:
-            if self.target_position.any():
+            if self.current_position:
                 self.uav_datapath = self.host_get_msg.uav_datapath
                 self.uav_port = self.host_get_msg.uav_port
                 self.uav_mac = self.host_get_msg.uav_mac
                 self.uav_ip = self.host_get_msg.uav_ip
+
+                logger.info("current_position %s" % self.current_position)
+                logger.info("target_position %s" % self.target_position)
+
+                logger.info("uav_datapath %s" % self.uav_datapath.id)
+                logger.info("uav_port %s" % self.uav_port)
+                logger.info("uav_mac %s" % self.uav_mac)
+                logger.info("uav_ip %s" % self.uav_ip)
+                
+
+
 
                 # 转发目标坐标数据到申请的交换机的主机上
                 ofproto = self.uav_datapath.ofproto
@@ -306,7 +348,13 @@ class Networkmain(app_manager.RyuApp):
                                         dst_ip=self.uav_ip))
 
                 pkt.serialize()
-                my_data = 'TargetPosition(target_position=%s)' % self.target_position
+                
+                self.position_data = {}
+                self.position_data["current_position"] = self.current_position
+                self.position_data["target_position"] = self.target_position
+                # my_data = 'TargetPosition(target_position=%s)' % self.target_position
+
+                my_data = 'Position(position_data=%s)' % self.position_data
                 data = pkt.data + bytearray(my_data.encode())
                 actions = [parser.OFPActionOutput(ofproto.OFPP_LOCAL)]
                 out = parser.OFPPacketOut(datapath=self.uav_datapath,
@@ -327,19 +375,25 @@ class Networkmain(app_manager.RyuApp):
         time_start = time.time()
 
         # or len(self.structure.sw_dpid_list) < 7
-        while (time.time() - time_start) <= 20 or len(self.structure.sw_dpid_list) < 3:
+        while (time.time() - time_start) <= 20 or len(self.structure.sw_dpid_list) < 5:
             # 主动获取拓扑
             self.structure.get_topology(ev=None, way=1)
             hub.sleep(2)
         while True:
             self.structure.get_topology(ev=None, way=1)
             hub.sleep(5)
+            # 发送无人机当前位置和目标位置给SDN板
+            self.send_position()
+
             self.monitor._request_stats()
             hub.sleep(5)
+            # 发送无人机当前位置和目标位置给SDN板
+            self.send_position()
+
             self.delay._send_echo_request()
             hub.sleep(5)
-            # 发送无人机目标位置给SDN板
-            self.send_target_position()
+            # 发送无人机当前位置和目标位置给SDN板
+            self.send_position()
 
             time_current = time.time()  # 记录程序当前截至运行时间
             time_accumulated = time_current - time_start  # 计算累计时间

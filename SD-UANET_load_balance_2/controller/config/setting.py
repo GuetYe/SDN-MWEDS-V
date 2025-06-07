@@ -1,8 +1,8 @@
 '''
 Author: 孙石泉 786721684@qq.com
 Date: 2023-11-22 10:01:34
-LastEditTime: 2025-02-27 16:13:21
-LastEditors: Sun Shiquan
+LastEditTime: 2025-05-05 19:12:51
+LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
 Description: 
 FilePath: \SD-UANET_load_balance_2\controller\config\setting.py
 '''
@@ -26,7 +26,15 @@ synthetic_delay_weight = 0.2
 synthetic_loss_weight = 0.1
 
 
-link_list = [(1,2),(1,21), (2,1),(2,3), (3,2),(3,4),(3,5), (4,3),(4,6), (5,3),(5,6),(5,21), (6,4),(6,5),(6,21), (21,1),(21,5),(21,6)]
+
+# 自己添加需要构建的网络拓扑的链路
+link_list = [(1,2),(2,1), (1,7), (7,1),\
+             (2,3), (3,2),\
+             (3,5), (5,3), (3,6), (6,3),
+             (4,5), (5,4),(4,6), (6,4),\
+             (6,7), (7,6)
+            ]
+            
             
 # link_list = [(1,2), (1,3), (1,4), (1,6), (2,1), (4,1), (3,1), (6,1),\
 #              (2,5), (2,6), (5,2), (6,2),\
@@ -106,7 +114,10 @@ attribute_matrix_weight = [0.6, 0.1, 0.3]
 
 
 # 6-start-network_uav_position.py---------------
-node_position = {1:[6.6, 7.2], 2:[2.7, 7.1], 3:[5.1, 0] ,4:[2.5, 0.2], 5:[4.0, 3.8], 6:[0, 4.4]}
+# node_position = {1:[6.6, 7.2], 2:[3, 5], 3:[5.1, 0] ,4:[2.4, 0.5], 5:[3.0, 3.8], 6:[0, 4.4],\
+#                  9:[0,0], 10:[0,0],14:[0,0]}
+
+node_position = {1:[6.6, 7.2], 2:[3, 5], 3:[5.1, 0] ,4:[2.4, 0.5], 5:[3.0, 3.8], 6:[0, 4.4]}
 
 client_id = 1  # 客户端节点
 server_ids = [2, 3, 4]  # 服务器节点

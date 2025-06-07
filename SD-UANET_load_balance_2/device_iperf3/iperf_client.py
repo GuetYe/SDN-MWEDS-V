@@ -1,7 +1,7 @@
 '''
 Author: 孙石泉 786721684@qq.com
 Date: 2023-07-20 20:49:58
-LastEditTime: 2025-02-27 21:31:38
+LastEditTime: 2025-02-21 21:13:55
 LastEditors: Sun Shiquan
 Description: 
 FilePath: \SD-UANET_load_balance_2\device_iperf3\iperf_client.py
@@ -12,13 +12,14 @@ import subprocess
 import time
 import random
 
-
-server_h1_ip = "10.0.0.51"
-server_h2_ip = "10.0.0.52"
-server_h3_ip = "10.0.0.53"
-server_h4_ip = "10.0.0.54"
-server_h5_ip = "10.0.0.55"
-server_h6_ip = "10.0.0.56"
+# 设置终端设备的IP，根据自己的情况设置
+server_h1_ip = "192.168.2.21"
+server_h2_ip = "192.168.2.1"
+server_h3_ip = "192.168.2.2"
+server_h4_ip = "192.168.2.3"
+server_h5_ip = "192.168.2.4"
+server_h6_ip = "192.168.2.5"
+server_h7_ip = "192.168.2.6"
 
 
 def run_iperf(command):
@@ -34,11 +35,11 @@ def send_data_flow(server_address, port, duration, rate):
     return run_iperf(iperf_command)
 
 def main():
-    server_addresses = [server_h1_ip, server_h2_ip, server_h3_ip, server_h4_ip, server_h5_ip, server_h6_ip]
+    server_addresses = [server_h1_ip, server_h2_ip, server_h3_ip, server_h4_ip, server_h5_ip, server_h6_ip, server_h7_ip]
     server_ports = "5201"  # 假设所有服务器都在相同的端口上运行iperf3
     data_rate = ["10K", "200K", "600K", "1M", "2M", "5M"]  # 每秒发送数据流的速率
 
-    flow_period = 60  # 发流周期
+    flow_period = 40  # 发流周期
 
     while True:
         # 配置iperf发流的参数

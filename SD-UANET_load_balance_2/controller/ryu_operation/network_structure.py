@@ -445,8 +445,10 @@ class Networkstructure(app_manager.RyuApp):
 
             
             # 把属性添加到图的链路中
-            self.network_topology.add_node(src_dpid, pos=setting.node_position[src_dpid])
-            self.network_topology.add_node(dst_dpid, pos=setting.node_position[dst_dpid])
+            if src_dpid != 7:
+                self.network_topology.add_node(src_dpid, pos=setting.node_position[src_dpid])
+            if dst_dpid != 7:
+                self.network_topology.add_node(dst_dpid, pos=setting.node_position[dst_dpid])
             self.network_topology.add_edge(src_dpid, dst_dpid, bw=bw, delay=delay, loss=loss, synthetic_weight = synthetic)
         
 

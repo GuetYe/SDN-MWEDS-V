@@ -1,10 +1,10 @@
 '''
 Author: 孙石泉 786721684@qq.com
 Date: 2023-11-22 09:58:22
-LastEditTime: 2025-02-27 21:51:37
+LastEditTime: 2025-05-09 21:05:16
 LastEditors: Sun Shiquan
 Description: 
-FilePath: \SD-UANET_load_balance_2\controller\ryu_operation\network_shortest_path.py
+FilePath: \SD-UANET_load_balance_2_25_5_7\controller\ryu_operation\network_shortest_path.py
 '''
 
 
@@ -242,7 +242,7 @@ class ShortestPathForwarding(app_manager.RyuApp):
         match_normal = parser.OFPMatch(in_port=src_port, eth_type=eth_type,
                                 ipv4_src=src_ip, ipv4_dst=dst_ip)
         
-        self.add_flow(datapath, 300, match_normal, actions, hard_timeout=40)
+        self.add_flow(datapath, 300, match_normal, actions, hard_timeout=65535)
         
     
 
@@ -271,7 +271,7 @@ class ShortestPathForwarding(app_manager.RyuApp):
                                 ipv4_src=src_ip, ipv4_dst=dst_ip)
         
 
-        self.add_flow(datapath, 400, match_normal, actions, hard_timeout=40)
+        self.add_flow(datapath, 300, match_normal, actions, hard_timeout=65535)
 
 
     def send_flow_mod_drop(self, datapath, eth_type, src_ip, dst_ip, src_port, dst_port):
@@ -292,7 +292,7 @@ class ShortestPathForwarding(app_manager.RyuApp):
         match = parser.OFPMatch(in_port=src_port, eth_type=eth_type,
                                 ipv4_src=src_ip, ipv4_dst=dst_ip)
 
-        self.add_flow(datapath, 1, match, actions, hard_timeout=60)
+        self.add_flow(datapath, 1, match, actions, hard_timeout=65535)
 
 
 

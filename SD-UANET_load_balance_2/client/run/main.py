@@ -1,14 +1,14 @@
 '''
 Author: 孙石泉 786721684@qq.com
 Date: 2024-01-21 10:24:21
-LastEditTime: 2025-03-01 15:17:12
+LastEditTime: 2025-05-12 17:51:25
 LastEditors: Sun Shiquan
 Description: 客户端终端运行的py文件（上传/下载功能）
 注意：
 1.终端接收控制器发过来的文件分割方案功能需要安装winpcap(已经不在维护)或npcap的软件包
 
 
-FilePath: \SD-UANET_load_balance_2\client\run\main.py
+FilePath: \SD-UANET_load_balance_2_25_5_7\client\run\main.py
 '''
 
 
@@ -65,7 +65,7 @@ class ThreadUploadFile (threading.Thread):   #继承父类threading.Thread
 
         logger.info("(%s-%s) has been uploaded successfully！" % (self.host_ip, self.local_file_path))
         host_smb.close()  # 上传完毕记得断开连接
-        save_info[host_ip] = remote_file_path  # 存储信息字典，[ip]:服务器端的分块文件名
+        save_info[self.host_ip] = remote_file_path  # 存储信息字典，[ip]:服务器端的分块文件名
 
     def stop(self):
         host_smb.connect_state == False
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     for number in range(setting.experiment_number):
         ################################配置################################
         # 需要存储 或 拉取文件保存的路径，及运行模式(存储或者拉取文件)
-        file_path = 'E:/test_1000MB.zip'
+        file_path = 'E:/test_2GB.zip'
         save_remote_path = '/'  # 需要存储的远程主机根路径
         mode = 1  # 1 = 存储   2 = 拉取
         merge_delete_flag = 1  # 拉取文件后是否删除分块文件 1=删除  0=不删除
@@ -114,7 +114,7 @@ if __name__ == '__main__':
         host_ip = ''
         if my_client_platform == 'Windows':
             host_ip = ClientRequest.get_wlan_ip_windows()
-            # host_ip = "10.0.0.213"
+            host_ip = "10.0.0.78"
         elif my_client_platform == 'Linux':
             host_ip = ClientRequest.get_host_IP_linux()
         else:
